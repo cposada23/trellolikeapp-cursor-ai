@@ -12,10 +12,10 @@ export default function Home() {
           height={38}
           priority
         />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
+        <ol className="font-sans list-inside list-decimal text-sm/6 text-center sm:text-left">
           <li className="mb-2 tracking-[-.01em]">
             Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
+            <code className="bg-black/[.05] dark:bg-white/[.06] font-sans font-semibold px-1 py-0.5 rounded">
               src/app/page.tsx
             </code>
             .
