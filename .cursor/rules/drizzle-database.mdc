@@ -1,0 +1,98 @@
+---
+alwaysApply: true
+description: Database interactions must always use Drizzle ORM with the defined schema and queries
+---
+
+# Drizzle Database Interaction Rules
+
+This project uses **Drizzle ORM** with PostgreSQL (Neon) for all database operations. All database interactions MUST follow these guidelines:
+
+## Core Requirements
+
+### 1. Database Connection
+- Always import the database connection from [src/db/index.ts](mdc:src/db/index.ts)
+- Use `import db from '@/db'` as the standard import pattern
+
+### 2. Schema Usage
+- All table definitions and relations are in [src/db/schema.ts](mdc:src/db/schema.ts)
+- Import required tables: `import { decksTable, cardsTable } from '@/db/schema'`
+- Available tables:
+  - `decksTable`: Collections of flashcards with userId (Clerk), name, description
+  - `cardsTable`: Individual flashcards with front/back content, linked to decks
+
+### 3. Query Patterns
+Always use Drizzle query syntax instead of raw SQL:
+
+```typescript
+// ✅ CORRECT - Using Drizzle queries
+import db from '@/db';
+import { decksTable, cardsTable } from '@/db/schema';
+import { eq, and, desc } from 'drizzle-orm';
+
+// Select with conditions
+const userDecks = await db
+  .select()
+  .from(decksTable)
+  .where(eq(decksTable.userId, userId));
+
+// Insert operations
+const newDeck = await db
+  .insert(decksTable)
+  .values({ name, description, userId })
+  .returning();
+
+// Update operations
+await db
+  .update(cardsTable)
+  .set({ front, back, updatedAt: new Date() })
+  .where(eq(cardsTable.id, cardId));
+
+// Delete operations
+await db
+  .delete(cardsTable)
+  .where(eq(cardsTable.id, cardId));
+```
+
+### 4. Relations and Joins
+- Use Drizzle's relational queries when possible
+- Relations are defined: decks.cards (one-to-many), cards.deck (many-to-one)
+
+```typescript
+// ✅ CORRECT - Using relations
+const deckWithCards = await db.query.decksTable.findFirst({
+  where: eq(decksTable.id, deckId),
+  with: { cards: true }
+});
+```
+
+### 5. Type Safety
+- Always use TypeScript types inferred from schema
+- Use `typeof decksTable.$inferInsert` for insert operations
+- Use `typeof decksTable.$inferSelect` for select operations
+
+## Prohibited Practices
+
+- ❌ **NO** raw SQL queries unless absolutely necessary
+- ❌ **NO** direct database connections outside of [src/db/index.ts](mdc:src/db/index.ts)
+- ❌ **NO** bypassing the schema definitions
+- ❌ **NO** hardcoded SQL strings
+
+## Migration Guidelines
+
+- Database schema changes must be done through Drizzle migrations
+- Use `npm run db:generate` to create migrations
+- Use `npm run db:migrate` to apply migrations
+- Configuration is in [drizzle.config.ts](mdc:drizzle.config.ts)
+
+## Best Practices
+
+1. Always use transactions for multi-table operations
+2. Include proper error handling for database operations
+3. Use prepared statements for repeated queries
+4. Leverage Drizzle's type safety features
+5. Use appropriate indexes (defined in schema)
+6. Handle CASCADE deletes properly (cards delete when deck is deleted)
+
+## Authentication Context
+- All deck operations must include `userId` for multi-tenant isolation
+- Use Clerk user IDs as stored in `decksTable.userId`
