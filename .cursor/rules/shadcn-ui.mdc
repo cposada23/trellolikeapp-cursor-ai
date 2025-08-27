@@ -3,9 +3,24 @@ alwaysApply: true
 description: Shadcn UI component usage guidelines for the project
 ---
 
-# Shadcn UI Component Guidelines
+# Shadcn UI Component Guidelines - STRICT ENFORCEMENT
 
-This project uses **Shadcn UI** for all UI elements and components. Always prefer Shadcn UI components over custom implementations or other UI libraries.
+This project **EXCLUSIVELY** uses **Shadcn UI** for **ALL** UI elements and components. 
+
+## MANDATORY RULES
+
+**CRITICAL**: This project has a ZERO-TOLERANCE policy for custom UI components.
+
+### ✅ REQUIRED:
+- **ALL** UI components MUST be Shadcn UI components imported from `@/components/ui/`
+- **ALL** buttons, inputs, modals, cards, forms MUST use Shadcn UI
+- **ALL** authentication UI MUST use Shadcn UI components with Clerk integration
+
+### ❌ ABSOLUTELY PROHIBITED:
+- Creating ANY custom UI components (buttons, inputs, modals, etc.)
+- Using ANY other UI libraries (Material-UI, Ant Design, Chakra UI, etc.)
+- Writing custom CSS for UI components beyond Tailwind utility classes
+- Implementing custom styling that duplicates Shadcn UI functionality
 
 ## Initialization
 
@@ -23,24 +38,200 @@ If a particular component is not installed, use the following command format (ex
 npx shadcn@latest add button
 ```
 
-## Common Components
+## REQUIRED Shadcn UI Components
 
-When implementing UI features, always check if a Shadcn UI component exists first:
+**MANDATORY**: Install these Shadcn UI components before implementing any UI:
 
-- **Buttons**: Use `npx shadcn@latest add button`
-- **Forms**: Use `npx shadcn@latest add form` and related form components
-- **Cards**: Use `npx shadcn@latest add card`
-- **Dialogs/Modals**: Use `npx shadcn@latest add dialog`
-- **Input fields**: Use `npx shadcn@latest add input`
-- **Tables**: Use `npx shadcn@latest add table`
-- **Navigation**: Use `npx shadcn@latest add navigation-menu`
+```bash
+# REQUIRED components for this project
+npx shadcn@latest add button
+npx shadcn@latest add dialog
+npx shadcn@latest add form
+npx shadcn@latest add input
+npx shadcn@latest add card
+npx shadcn@latest add table
+npx shadcn@latest add navigation-menu
+npx shadcn@latest add alert
+npx shadcn@latest add badge
+npx shadcn@latest add separator
+npx shadcn@latest add skeleton
+```
+
+### Component Usage Requirements:
+- **Buttons**: ONLY use `Button` from `@/components/ui/button` - NO custom button components
+- **Forms**: ONLY use `Form`, `FormField`, `FormItem` from `@/components/ui/form`
+- **Cards**: ONLY use `Card`, `CardHeader`, `CardContent` from `@/components/ui/card`
+- **Dialogs/Modals**: ONLY use `Dialog`, `DialogContent`, `DialogHeader` from `@/components/ui/dialog`
+- **Input fields**: ONLY use `Input` from `@/components/ui/input`
+- **Tables**: ONLY use `Table`, `TableHeader`, `TableBody` from `@/components/ui/table`
+
+## CLERK AUTHENTICATION WITH SHADCN UI - MANDATORY PATTERN
+
+**CRITICAL**: All authentication UI MUST use Shadcn UI components with Clerk integration through modals.
+
+### Required Implementation Pattern:
+
+```typescript
+// ✅ CORRECT - Shadcn UI Button + Clerk Modal Integration
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { SignIn, SignUp, useAuth } from '@clerk/nextjs';
+
+export function AuthButtons() {
+  const { isSignedIn } = useAuth();
+  
+  if (isSignedIn) return null;
+  
+  return (
+    <div className="flex gap-2">
+      {/* Sign In Modal with Shadcn UI */}
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline">Sign In</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Welcome Back</DialogTitle>
+          </DialogHeader>
+          <SignIn routing="virtual" />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Sign Up Modal with Shadcn UI */}
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button>Sign Up</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Account</DialogTitle>
+          </DialogHeader>
+          <SignUp routing="virtual" />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+```
+
+### ❌ ABSOLUTELY FORBIDDEN AUTHENTICATION PATTERNS:
+- Using Clerk's built-in buttons (SignInButton, SignUpButton) WITHOUT Shadcn UI
+- Creating custom styled authentication buttons
+- Using redirects instead of modals for sign in/sign up
+- Any authentication UI that doesn't use Shadcn UI components
+
+### ✅ REQUIRED AUTHENTICATION PATTERNS:
+- ALL sign in/sign up buttons MUST be Shadcn UI `Button` components
+- ALL authentication modals MUST use Shadcn UI `Dialog` components
+- Use `routing="virtual"` in Clerk components for modal behavior
+- Wrap Clerk components (`SignIn`, `SignUp`) inside Shadcn UI `DialogContent`
 
 ## Implementation Guidelines
 
-1. Always import Shadcn UI components from `@/components/ui/`
-2. Customize components using Tailwind CSS classes when needed
-3. Follow the Shadcn UI documentation for proper usage patterns
-4. Maintain consistency across the application by using the same component variants
+1. **MANDATORY**: Always import Shadcn UI components from `@/components/ui/`
+2. **MANDATORY**: Use ONLY Shadcn UI components for ALL UI elements
+3. Customize components using ONLY Tailwind CSS utility classes
+4. Follow Shadcn UI documentation for proper usage patterns
+5. **NEVER** create custom UI components when Shadcn UI equivalent exists
+
+## ENFORCEMENT - EXAMPLES OF VIOLATIONS
+
+### ❌ VIOLATIONS THAT MUST BE REJECTED:
+
+```typescript
+// ❌ FORBIDDEN - Custom button component
+export function CustomButton({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+  return (
+    <button 
+      className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+}
+
+// ❌ FORBIDDEN - Custom modal implementation
+export function CustomModal({ isOpen, onClose, children }: ModalProps) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50">
+      <div className="bg-white p-4 rounded">{children}</div>
+    </div>
+  );
+}
+
+// ❌ FORBIDDEN - Using Clerk buttons without Shadcn UI
+import { SignInButton, SignUpButton } from '@clerk/nextjs';
+export function BadAuthButtons() {
+  return (
+    <div>
+      <SignInButton />
+      <SignUpButton />
+    </div>
+  );
+}
+
+// ❌ FORBIDDEN - Custom form inputs
+export function CustomInput({ placeholder, value, onChange }: InputProps) {
+  return (
+    <input 
+      className="border rounded px-3 py-2"
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+    />
+  );
+}
+```
+
+### ✅ CORRECT IMPLEMENTATIONS:
+
+```typescript
+// ✅ CORRECT - Using Shadcn UI Button
+import { Button } from '@/components/ui/button';
+
+export function CorrectButton() {
+  return <Button onClick={handleClick}>Click Me</Button>;
+}
+
+// ✅ CORRECT - Using Shadcn UI Dialog
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+
+export function CorrectModal() {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button>Open Modal</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <p>Modal content here</p>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ✅ CORRECT - Using Shadcn UI Input
+import { Input } from '@/components/ui/input';
+
+export function CorrectInput() {
+  return <Input placeholder="Enter text..." />;
+}
+```
+
+## QUALITY ASSURANCE CHECKLIST
+
+Before submitting any code, verify:
+
+- [ ] **NO** custom UI components exist in the codebase
+- [ ] **ALL** buttons use `Button` from `@/components/ui/button`
+- [ ] **ALL** modals use `Dialog` components from `@/components/ui/dialog`
+- [ ] **ALL** forms use `Form` components from `@/components/ui/form`
+- [ ] **ALL** inputs use `Input` from `@/components/ui/input`
+- [ ] **ALL** authentication uses Shadcn UI + Clerk modal pattern
+- [ ] **NO** custom CSS beyond Tailwind utility classes
+- [ ] **NO** other UI libraries imported or used
 
 ## Resources
 

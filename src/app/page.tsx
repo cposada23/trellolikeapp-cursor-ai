@@ -1,8 +1,14 @@
-import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignedOut } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 export default async function Home() {
   const user = await currentUser();
+  
+  // Redirect signed-in users to dashboard
+  if (user) {
+    redirect('/dashboard');
+  }
 
   return (
     <div className="min-h-[calc(100vh-80px)] flex items-center justify-center p-8">
@@ -58,68 +64,7 @@ export default async function Home() {
           </div>
         </SignedOut>
 
-        <SignedIn>
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <h1 className="text-4xl font-bold text-white">
-                Welcome back, {user?.firstName || 'there'}! 👋
-              </h1>
-              <p className="text-xl text-gray-400">
-                Ready to continue your learning journey?
-              </p>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
-              <button className="bg-purple-600 hover:bg-purple-700 text-white p-6 rounded-lg transition-colors text-left">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Create New Deck</h3>
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                </div>
-                <p className="text-purple-100">Start a new flashcard deck for your next subject</p>
-              </button>
-
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white p-6 rounded-lg transition-colors text-left">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">Study Session</h3>
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <p className="text-indigo-100">Continue studying your existing decks</p>
-              </button>
-
-              <button className="bg-purple-600 hover:bg-purple-700 text-white p-6 rounded-lg transition-colors text-left">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold">View Progress</h3>
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <p className="text-purple-100">Check your learning statistics and achievements</p>
-              </button>
-            </div>
-
-            <div className="mt-12 bg-white/5 backdrop-blur border border-white/10 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-white mb-4">Quick Stats</h3>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-purple-400">0</div>
-                  <div className="text-sm text-gray-400">Total Decks</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-indigo-400">0</div>
-                  <div className="text-sm text-gray-400">Cards Studied</div>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-violet-400">0%</div>
-                  <div className="text-sm text-gray-400">Success Rate</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </SignedIn>
+        {/* SignedIn users are redirected to dashboard, so this component will never render for signed-in users */}
       </div>
     </div>
   );
