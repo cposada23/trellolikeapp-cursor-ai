@@ -2,6 +2,7 @@ import { SignedOut } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AuthButtons } from "@/components/auth-buttons";
 
 export default async function Home() {
   const user = await currentUser();
@@ -73,6 +74,7 @@ export default async function Home() {
               <p className="text-lg text-gray-300 mb-6">
                 Ready to boost your learning? Sign up to get started!
               </p>
+              <AuthButtons />
             </div>
           </div>
         </SignedOut>
