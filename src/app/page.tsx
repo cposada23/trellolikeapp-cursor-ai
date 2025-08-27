@@ -1,6 +1,7 @@
 import { SignedOut } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default async function Home() {
   const user = await currentUser();
@@ -25,35 +26,47 @@ export default async function Home() {
             </div>
             
             <div className="grid md:grid-cols-3 gap-8 mt-12">
-              <div className="bg-white/5 backdrop-blur border border-white/10 rounded-lg p-6">
-                <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Smart Cards</h3>
-                <p className="text-gray-400">Create interactive flashcards with rich content and multimedia support.</p>
-              </div>
+              <Card className="bg-white/5 backdrop-blur border-white/10">
+                <CardHeader className="text-center">
+                  <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  </div>
+                  <CardTitle className="text-lg font-semibold text-white">Smart Cards</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-400 text-center">Create interactive flashcards with rich content and multimedia support.</p>
+                </CardContent>
+              </Card>
               
-              <div className="bg-white/5 backdrop-blur border border-white/10 rounded-lg p-6">
-                <div className="w-12 h-12 bg-indigo-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Track Progress</h3>
-                <p className="text-gray-400">Monitor your learning with detailed analytics and performance insights.</p>
-              </div>
+              <Card className="bg-white/5 backdrop-blur border-white/10">
+                <CardHeader className="text-center">
+                  <div className="w-12 h-12 bg-indigo-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <CardTitle className="text-lg font-semibold text-white">Track Progress</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-400 text-center">Monitor your learning with detailed analytics and performance insights.</p>
+                </CardContent>
+              </Card>
               
-              <div className="bg-white/5 backdrop-blur border border-white/10 rounded-lg p-6">
-                <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">Study Smart</h3>
-                <p className="text-gray-400">Adaptive learning algorithm focuses on cards you need to practice most.</p>
-              </div>
+              <Card className="bg-white/5 backdrop-blur border-white/10">
+                <CardHeader className="text-center">
+                  <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <CardTitle className="text-lg font-semibold text-white">Study Smart</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-400 text-center">Adaptive learning algorithm focuses on cards you need to practice most.</p>
+                </CardContent>
+              </Card>
             </div>
             
             <div className="mt-12">

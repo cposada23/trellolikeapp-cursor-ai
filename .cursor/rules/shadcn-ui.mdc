@@ -15,10 +15,11 @@ This project **EXCLUSIVELY** uses **Shadcn UI** for **ALL** UI elements and comp
 - **ALL** UI components MUST be Shadcn UI components imported from `@/components/ui/`
 - **ALL** buttons, inputs, modals, cards, forms MUST use Shadcn UI
 - **ALL** authentication UI MUST use Shadcn UI components with Clerk integration
+- **CLERK COMPONENTS** from `@clerk/nextjs` ARE ALLOWED and should be used for authentication
 
 ### ❌ ABSOLUTELY PROHIBITED:
 - Creating ANY custom UI components (buttons, inputs, modals, etc.)
-- Using ANY other UI libraries (Material-UI, Ant Design, Chakra UI, etc.)
+- Using ANY other UI libraries (Material-UI, Ant Design, Chakra UI, etc.) **EXCEPT** `@clerk/nextjs`
 - Writing custom CSS for UI components beyond Tailwind utility classes
 - Implementing custom styling that duplicates Shadcn UI functionality
 
@@ -67,17 +68,16 @@ npx shadcn@latest add skeleton
 
 ## CLERK AUTHENTICATION WITH SHADCN UI - MANDATORY PATTERN
 
-**CRITICAL**: All authentication UI MUST use Shadcn UI components with Clerk integration through modals.
+**CRITICAL**: All authentication UI MUST use Shadcn UI components with Clerk integration using Clerk's modal functionality.
 
 ### Required Implementation Pattern:
 
 ```typescript
-// ✅ CORRECT - Shadcn UI Button + Clerk Modal Integration
+// ✅ CORRECT - Clerk Modal Integration with Shadcn UI Button
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { SignIn, SignUp, useAuth } from '@clerk/nextjs';
+import { SignInButton, SignUpButton, useAuth } from '@clerk/nextjs';
 
 export function AuthButtons() {
   const { isSignedIn } = useAuth();
@@ -86,47 +86,37 @@ export function AuthButtons() {
   
   return (
     <div className="flex gap-2">
-      {/* Sign In Modal with Shadcn UI */}
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="outline">Sign In</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Welcome Back</DialogTitle>
-          </DialogHeader>
-          <SignIn routing="virtual" />
-        </DialogContent>
-      </Dialog>
+      {/* Sign In Modal using Clerk's modal mode */}
+      <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+        <Button variant="outline">
+          Sign In
+        </Button>
+      </SignInButton>
       
-      {/* Sign Up Modal with Shadcn UI */}
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button>Sign Up</Button>
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Account</DialogTitle>
-          </DialogHeader>
-          <SignUp routing="virtual" />
-        </DialogContent>
-      </Dialog>
+      {/* Sign Up Modal using Clerk's modal mode */}
+      <SignUpButton mode="modal" forceRedirectUrl="/dashboard">
+        <Button>
+          Sign Up
+        </Button>
+      </SignUpButton>
     </div>
   );
 }
 ```
 
 ### ❌ ABSOLUTELY FORBIDDEN AUTHENTICATION PATTERNS:
-- Using Clerk's built-in buttons (SignInButton, SignUpButton) WITHOUT Shadcn UI
-- Creating custom styled authentication buttons
-- Using redirects instead of modals for sign in/sign up
-- Any authentication UI that doesn't use Shadcn UI components
+- Using Clerk's default button styling (must wrap with Shadcn UI Button)
+- Creating custom styled authentication buttons instead of using Shadcn UI
+- Using redirects instead of modals for sign in/sign up (`mode="modal"` is required)
+- Any authentication UI that doesn't use Shadcn UI Button components
+- Implementing custom Dialog components when Clerk provides modal functionality
 
 ### ✅ REQUIRED AUTHENTICATION PATTERNS:
-- ALL sign in/sign up buttons MUST be Shadcn UI `Button` components
-- ALL authentication modals MUST use Shadcn UI `Dialog` components
-- Use `routing="virtual"` in Clerk components for modal behavior
-- Wrap Clerk components (`SignIn`, `SignUp`) inside Shadcn UI `DialogContent`
+- ALL sign in/sign up buttons MUST be Shadcn UI `Button` components wrapped by Clerk components
+- Use Clerk's `SignInButton` and `SignUpButton` with `mode="modal"`
+- Always include `forceRedirectUrl` to specify post-authentication destination
+- Wrap Shadcn UI `Button` components inside Clerk authentication components
+- Use `@clerk/nextjs` components for authentication functionality
 
 ## Implementation Guidelines
 
@@ -135,6 +125,34 @@ export function AuthButtons() {
 3. Customize components using ONLY Tailwind CSS utility classes
 4. Follow Shadcn UI documentation for proper usage patterns
 5. **NEVER** create custom UI components when Shadcn UI equivalent exists
+6. **USE** `@clerk/nextjs` components for authentication functionality, but always style with Shadcn UI
+
+## COMPONENT USAGE CLARIFICATION
+
+### When to Use @clerk/nextjs Components:
+- **Authentication**: Use `SignInButton`, `SignUpButton`, `UserButton`, `SignIn`, `SignUp`
+- **User Management**: Use `UserProfile`, `OrganizationProfile`  
+- **Protecting Content**: Use `SignedIn`, `SignedOut`, `Protect`
+
+### When to Use Pure Shadcn UI:
+- **All other UI elements**: Buttons (non-auth), Forms, Inputs, Cards, Tables, etc.
+- **Non-authentication modals**: Use Shadcn UI `Dialog` components
+- **Layout and styling**: Always use Shadcn UI for visual styling
+
+### Integration Pattern:
+**ALWAYS** wrap Shadcn UI components inside Clerk components for authentication, never the other way around:
+
+```typescript
+// ✅ CORRECT: Clerk component wraps Shadcn UI
+<SignInButton mode="modal">
+  <Button variant="outline">Sign In</Button>
+</SignInButton>
+
+// ❌ WRONG: Shadcn UI wraps Clerk component  
+<Button>
+  <SignInButton />
+</Button>
+```
 
 ## ENFORCEMENT - EXAMPLES OF VIOLATIONS
 
@@ -162,14 +180,28 @@ export function CustomModal({ isOpen, onClose, children }: ModalProps) {
   );
 }
 
-// ❌ FORBIDDEN - Using Clerk buttons without Shadcn UI
+// ❌ FORBIDDEN - Using Clerk buttons without Shadcn UI styling
 import { SignInButton, SignUpButton } from '@clerk/nextjs';
 export function BadAuthButtons() {
   return (
     <div>
-      <SignInButton />
-      <SignUpButton />
+      {/* Using Clerk's default button styling - FORBIDDEN */}
+      <SignInButton mode="modal" />
+      <SignUpButton mode="modal" />
     </div>
+  );
+}
+
+// ❌ FORBIDDEN - Custom Dialog implementation instead of Clerk modal
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { SignIn, SignUp } from '@clerk/nextjs';
+export function BadDialogAuth() {
+  return (
+    <Dialog>
+      <DialogContent>
+        <SignIn routing="virtual" />
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -196,7 +228,25 @@ export function CorrectButton() {
   return <Button onClick={handleClick}>Click Me</Button>;
 }
 
-// ✅ CORRECT - Using Shadcn UI Dialog
+// ✅ CORRECT - Clerk Authentication with Shadcn UI Button
+import { Button } from '@/components/ui/button';
+import { SignInButton, SignUpButton } from '@clerk/nextjs';
+
+export function CorrectAuthButtons() {
+  return (
+    <div className="flex gap-2">
+      <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+        <Button variant="outline">Sign In</Button>
+      </SignInButton>
+      
+      <SignUpButton mode="modal" forceRedirectUrl="/dashboard">
+        <Button>Sign Up</Button>
+      </SignUpButton>
+    </div>
+  );
+}
+
+// ✅ CORRECT - Using Shadcn UI Dialog for non-auth modals
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 export function CorrectModal() {
@@ -226,12 +276,16 @@ Before submitting any code, verify:
 
 - [ ] **NO** custom UI components exist in the codebase
 - [ ] **ALL** buttons use `Button` from `@/components/ui/button`
-- [ ] **ALL** modals use `Dialog` components from `@/components/ui/dialog`
+- [ ] **ALL** modals (non-auth) use `Dialog` components from `@/components/ui/dialog`
 - [ ] **ALL** forms use `Form` components from `@/components/ui/form`
 - [ ] **ALL** inputs use `Input` from `@/components/ui/input`
-- [ ] **ALL** authentication uses Shadcn UI + Clerk modal pattern
+- [ ] **ALL** authentication uses Clerk components (`SignInButton`, `SignUpButton`) with `mode="modal"`
+- [ ] **ALL** authentication buttons are Shadcn UI `Button` components wrapped by Clerk components
+- [ ] **ALL** authentication includes `forceRedirectUrl` parameter
 - [ ] **NO** custom CSS beyond Tailwind utility classes
-- [ ] **NO** other UI libraries imported or used
+- [ ] **NO** other UI libraries imported or used (except `@clerk/nextjs`)
+- [ ] **NO** custom Dialog implementations for authentication (use Clerk's modal mode)
+- [ ] **PROPER** integration pattern: Clerk wraps Shadcn UI, not vice versa
 
 ## Resources
 
