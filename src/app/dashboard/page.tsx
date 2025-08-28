@@ -117,7 +117,7 @@ export default async function DashboardPage() {
                         Updated: {new Date(deck.updatedAt).toLocaleDateString()}
                       </span>
                       <div className="flex gap-2">
-                        <Link href={`/decks/${deck.id}`}>
+                        <Link href={`/study/deck/${deck.id}`}>
                           <Button size="sm" variant="outline" className="text-xs">
                             Study
                           </Button>

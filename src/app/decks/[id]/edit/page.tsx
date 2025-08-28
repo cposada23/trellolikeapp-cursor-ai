@@ -9,7 +9,7 @@ import DeckEditForm from './components/deck-edit-form';
 import CardManagement from './components/card-management';
 
 interface EditDeckPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function EditDeckPage({ params }: EditDeckPageProps) {
@@ -20,8 +20,9 @@ export default async function EditDeckPage({ params }: EditDeckPageProps) {
     redirect('/');
   }
 
-  // Convert id to number and fetch deck with cards
-  const deckId = parseInt(params.id, 10);
+  // Await params and convert id to number, then fetch deck with cards
+  const { id } = await params;
+  const deckId = parseInt(id, 10);
   
   if (isNaN(deckId)) {
     redirect('/dashboard');
