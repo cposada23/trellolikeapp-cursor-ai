@@ -1,11 +1,11 @@
 ---
 alwaysApply: true
-description: "Clerk authentication and authorization guidelines for secure user data isolation"
 ---
-
 # Clerk Authentication & Authorization Rules
 
 This project uses **Clerk** for authentication and authorization. All user data access MUST be properly secured to ensure users can only access their own data and never access data belonging to other users.
+
+**IMPORTANT**: This app uses **modal-based authentication** with Clerk components (SignInButton, SignUpButton with `mode="modal"`). There are **NO dedicated sign-in pages**. Users who attempt to access protected routes while unauthenticated are redirected to the homepage where they can authenticate using the modal-based sign-in components.
 
 ## Core Authentication Requirements
 
@@ -125,10 +125,11 @@ async function updateCard(cardId: string, updates: any) {
 ## Route Protection
 
 ### 1. Middleware Configuration
-Ensure [src/middleware.ts](mdc:src/middleware.ts) properly protects routes:
+Ensure [src/middleware.ts](mdc:src/middleware.ts) properly protects routes and redirects to homepage:
 
 ```typescript
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { NextResponse } from 'next/server';
 
 const isProtectedRoute = createRouteMatcher([
   '/dashboard(.*)',
@@ -139,7 +140,13 @@ const isProtectedRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware((auth, req) => {
-  if (isProtectedRoute(req)) auth().protect();
+  if (isProtectedRoute(req)) {
+    const { userId } = auth();
+    if (!userId) {
+      // Redirect to homepage instead of sign-in page
+      return NextResponse.redirect(new URL('/', req.url));
+    }
+  }
 });
 ```
 
