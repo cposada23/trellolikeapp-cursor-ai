@@ -7,6 +7,8 @@ This project uses **Clerk** for authentication and authorization. All user data 
 
 **IMPORTANT**: This app uses **modal-based authentication** with Clerk components (SignInButton, SignUpButton with `mode="modal"`). There are **NO dedicated sign-in pages**. Users who attempt to access protected routes while unauthenticated are redirected to the homepage where they can authenticate using the modal-based sign-in components.
 
+**CRITICAL**: All successful sign-in and sign-up operations MUST redirect users to the `/dashboard` page. This ensures a consistent post-authentication experience and proper user flow.
+
 ## Core Authentication Requirements
 
 ### 1. User Authentication
@@ -33,6 +35,39 @@ export async function getUserDecks() {
     .where(eq(decksTable.userId, userId));
 }
 ```
+
+## Post-Authentication Redirects - MANDATORY
+
+**CRITICAL**: All authentication components MUST include proper redirect URLs to ensure users are sent to the dashboard page after successful authentication.
+
+### 1. Required Redirect Pattern
+All SignInButton and SignUpButton components MUST use the following pattern:
+
+```typescript
+// ✅ REQUIRED - SignInButton with dashboard redirect
+<SignInButton mode="modal" forceRedirectUrl="/dashboard">
+  <Button variant="outline">Sign In</Button>
+</SignInButton>
+
+// ✅ REQUIRED - SignUpButton with dashboard redirect
+<SignUpButton mode="modal" forceRedirectUrl="/dashboard">
+  <Button>Sign Up</Button>
+</SignUpButton>
+```
+
+### 2. Redirect Parameters
+- **`forceRedirectUrl="/dashboard"`**: MANDATORY for all authentication buttons
+- **`mode="modal"`**: REQUIRED for modal-based authentication
+- **Dashboard URL**: Must always be `/dashboard` - never omit or use different URLs
+
+### 3. Environment Variables (Optional)
+For global redirect configuration, set in `.env.local`:
+```env
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
+```
+
+However, **ALWAYS** include `forceRedirectUrl="/dashboard"` in components for explicit control.
 
 ## Authorization Patterns
 
@@ -196,24 +231,90 @@ export async function createDeck(formData: FormData) {
 ## Client-Side Authentication
 
 ### 1. Component Protection
-Use Clerk's client components for conditional rendering:
+Use Clerk's client components for conditional rendering with MANDATORY dashboard redirects:
 
 ```typescript
 import { useAuth, useUser } from '@clerk/nextjs';
-import { SignInButton, SignOutButton } from '@clerk/nextjs';
+import { SignInButton, SignUpButton, SignOutButton } from '@clerk/nextjs';
+import { Button } from '@/components/ui/button';
 
 function ProtectedComponent() {
   const { isSignedIn, userId } = useAuth();
   
   if (!isSignedIn) {
-    return <SignInButton />;
+    return (
+      <div className="flex gap-2">
+        {/* MANDATORY: Include forceRedirectUrl="/dashboard" */}
+        <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+          <Button variant="outline">Sign In</Button>
+        </SignInButton>
+        <SignUpButton mode="modal" forceRedirectUrl="/dashboard">
+          <Button>Sign Up</Button>
+        </SignUpButton>
+      </div>
+    );
   }
   
   return (
     <div>
       <UserContent />
-      <SignOutButton />
+      <SignOutButton>
+        <Button variant="outline">Sign Out</Button>
+      </SignOutButton>
     </div>
+  );
+}
+```
+
+### 2. Authentication Buttons Component Pattern
+Create reusable authentication components that ALWAYS redirect to dashboard:
+
+```typescript
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { SignInButton, SignUpButton, useAuth } from '@clerk/nextjs';
+
+export function AuthButtons() {
+  const { isSignedIn } = useAuth();
+  
+  if (isSignedIn) return null;
+  
+  return (
+    <div className="flex gap-2">
+      {/* CRITICAL: ALWAYS include forceRedirectUrl="/dashboard" */}
+      <SignInButton mode="modal" forceRedirectUrl="/dashboard">
+        <Button variant="outline">Sign In</Button>
+      </SignInButton>
+      
+      <SignUpButton mode="modal" forceRedirectUrl="/dashboard">
+        <Button>Sign Up</Button>
+      </SignUpButton>
+    </div>
+  );
+}
+```
+
+### 3. Navigation Bar Authentication
+For navigation components, maintain consistent dashboard redirects:
+
+```typescript
+import { UserButton, useAuth } from '@clerk/nextjs';
+import { AuthButtons } from '@/components/auth-buttons';
+
+export function Navbar() {
+  const { isSignedIn } = useAuth();
+  
+  return (
+    <nav className="flex justify-between items-center p-4">
+      <h1>Flashcard App</h1>
+      
+      {isSignedIn ? (
+        <UserButton afterSignOutUrl="/" />
+      ) : (
+        <AuthButtons />
+      )}
+    </nav>
   );
 }
 ```
@@ -252,6 +353,34 @@ if (!userDeck.length) {
 - Implement custom authentication logic alongside Clerk
 - Cache user data without proper user-specific keys
 - Share database connections between different user sessions
+- **Omit `forceRedirectUrl="/dashboard"` from SignInButton or SignUpButton components**
+- **Use redirect URLs other than `/dashboard` for post-authentication flows**
+- **Create authentication buttons without modal mode (`mode="modal"` is required)**
+- **Allow users to be redirected to unexpected pages after successful authentication**
+
+### ❌ FORBIDDEN Authentication Patterns:
+
+```typescript
+// ❌ FORBIDDEN - No redirect URL specified
+<SignInButton mode="modal">
+  <Button>Sign In</Button>
+</SignInButton>
+
+// ❌ FORBIDDEN - Wrong redirect URL
+<SignInButton mode="modal" forceRedirectUrl="/profile">
+  <Button>Sign In</Button>
+</SignInButton>
+
+// ❌ FORBIDDEN - Missing modal mode
+<SignInButton forceRedirectUrl="/dashboard">
+  <Button>Sign In</Button>
+</SignInButton>
+
+// ❌ FORBIDDEN - Using redirect mode instead of modal
+<SignInButton mode="redirect" signInUrl="/sign-in">
+  <Button>Sign In</Button>
+</SignInButton>
+```
 
 ## Testing Authorization
 
@@ -261,5 +390,18 @@ When testing, always verify:
 3. Unauthenticated requests are properly rejected
 4. All database queries include proper authorization filters
 5. API endpoints return 401/403 for unauthorized access attempts
+6. **All sign-in operations redirect to `/dashboard` after successful authentication**
+7. **All sign-up operations redirect to `/dashboard` after successful authentication**
+8. **Authentication buttons include proper `forceRedirectUrl="/dashboard"` parameter**
+9. **Modal authentication works properly and redirects correctly**
 
-Remember: **Data isolation is critical**. Every database operation involving user data must include proper authorization checks.
+### Authentication Flow Testing Checklist:
+- [ ] Sign-in button uses `mode="modal"` and `forceRedirectUrl="/dashboard"`
+- [ ] Sign-up button uses `mode="modal"` and `forceRedirectUrl="/dashboard"`
+- [ ] Successful sign-in redirects user to dashboard page
+- [ ] Successful sign-up redirects user to dashboard page
+- [ ] Modal closes properly after authentication
+- [ ] User sees dashboard content immediately after authentication
+- [ ] No unexpected redirects to other pages occur
+
+Remember: **Data isolation is critical**. Every database operation involving user data must include proper authorization checks. **Post-authentication user experience is equally important** - users must always land on the dashboard page after successful authentication.
