@@ -77,7 +77,7 @@ export default function DeckEditForm({ deck }: DeckEditFormProps) {
       } else {
         setError(result.error || 'Failed to delete deck');
       }
-    } catch (error) {
+    } catch {
       setError('Failed to delete deck');
     } finally {
       setIsDeleting(false);
